@@ -1,9 +1,10 @@
-import pandas as pd
-import numpy as np
 import tensorflow as tf
 
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+
+def next_batch(images, labels, start, batch_size):
+    end = min(start + batch_size, images.shape[0])
+    return images[start:end], labels[start:end]
+
 
 if __name__ == '__main__':
     from utils.ReadDataSet import *
@@ -89,22 +90,25 @@ if __name__ == '__main__':
 
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
-
     # start tf session
     init = tf.initialize_all_variables()
     sess = tf.InteractiveSession()
 
     sess.run(init)
 
-    # Test with a small batch of 10 images
-    batch_xs = images[0:1000]
-    batch_ys = labels[0:1000]
+    # Do iterative training
+    num_steps = 10
+    batch_size = 50
+    start = 0
+    for i in range(0, num_steps):
+        batch_xs, batch_ys = next_batch(images, labels, start, batch_size)
+        start += batch_size
 
-    # Do the training
-    sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
+        # Do the training
+        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
 
-    train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
-                                              y_: batch_ys,
-                                              keep_prob: 1.0})
+        train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
+                                                  y_: batch_ys,
+                                                  keep_prob: 1.0})
 
-    print('training_accuracy => %.4f' % (train_accuracy))
+        print('training_accuracy => %.4f , step => %.4f' % (train_accuracy, i))
