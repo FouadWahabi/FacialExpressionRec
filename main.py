@@ -11,6 +11,8 @@ if __name__ == '__main__':
     # Load traingin data
     images, labels = read_dataset("data/fer2013.csv")
 
+    print(labels)
+
     image_width = image_height = np.ceil(np.sqrt(images.shape[1])).astype(np.uint8)
 
     # init tf inputs
@@ -72,13 +74,18 @@ if __name__ == '__main__':
     # optimisation function
     train_step = tf.train.AdamOptimizer().minimize(cross_entropy)
 
+    # labels
+    labels_flat = tf.argmax(y_, 1)
+
     # prediction function
     predict = tf.argmax(y, 1)
+
+    print_labels = tf.Print(labels_flat, [labels_flat], "The labels are : ")
 
     print_predict = tf.Print(predict, [predict], "The prediction is : ")
 
     # evaluation
-    correct_prediction = tf.equal(print_predict, tf.argmax(y_, 1))
+    correct_prediction = tf.equal(print_predict, print_labels)
 
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
@@ -90,8 +97,8 @@ if __name__ == '__main__':
     sess.run(init)
 
     # Test with a small batch of 10 images
-    batch_xs = images[0:10]
-    batch_ys = labels[0:10]
+    batch_xs = images[0:1000]
+    batch_ys = labels[0:1000]
 
     # Do the training
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
