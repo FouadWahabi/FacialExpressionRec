@@ -2,7 +2,15 @@ import tensorflow as tf
 
 
 def next_batch(images, labels, start, batch_size):
-    end = min(start + batch_size, images.shape[0])
+    if start + batch_size >= images.shape[0]:
+        # Shuffle data when its all used
+        perm = np.arange(images.shape[0])
+        np.random.shuffle(perm)
+        train_images = images[perm]
+        train_labels = labels[perm]
+        # start next epoch
+        start = 0
+    end = start + batch_size
     return images[start:end], labels[start:end]
 
 
@@ -97,18 +105,29 @@ if __name__ == '__main__':
     sess.run(init)
 
     # Do iterative training
-    num_steps = 10
+    TRAINING_ITERATIONS = 3000
     batch_size = 50
     start = 0
-    for i in range(0, num_steps):
+    display_step = 1
+    for i in range(0, TRAINING_ITERATIONS):
         batch_xs, batch_ys = next_batch(images, labels, start, batch_size)
         start += batch_size
 
+        # check progress on every 1st,2nd,...,10th,20th,...,100th... step
+        if i % display_step == 0 or (i + 1) == TRAINING_ITERATIONS:
+
+            train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
+                                                      y_: batch_ys,
+                                                      keep_prob: 1.0})
+            train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
+                                                      y_: batch_ys,
+                                                      keep_prob: 1.0})
+
+            print('training_accuracy => %.4f , step => %.4f' % (train_accuracy, i))
+
+            # increase display_step
+            if i % (display_step * 10) == 0 and i and display_step < 100:
+                display_step *= 10
+
         # Do the training
         sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
-
-        train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
-                                                  y_: batch_ys,
-                                                  keep_prob: 1.0})
-
-        print('training_accuracy => %.4f , step => %.4f' % (train_accuracy, i))
