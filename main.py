@@ -1,17 +1,31 @@
 import tensorflow as tf
 
 
-def next_batch(images, labels, start, batch_size):
-    if start + batch_size >= images.shape[0]:
-        # Shuffle data when its all used
-        perm = np.arange(images.shape[0])
+# serve data by batches
+def next_batch(batch_size):
+    global train_images
+    global train_labels
+    global index_in_epoch
+    global epochs_completed
+
+    start = index_in_epoch
+    index_in_epoch += batch_size
+
+    # when all trainig data have been already used, it is reorder randomly
+    if index_in_epoch > num_examples:
+        # finished epoch
+        epochs_completed += 1
+        # shuffle the data
+        perm = np.arange(num_examples)
         np.random.shuffle(perm)
-        train_images = images[perm]
-        train_labels = labels[perm]
+        train_images = train_images[perm]
+        train_labels = train_labels[perm]
         # start next epoch
         start = 0
-    end = start + batch_size
-    return images[start:end], labels[start:end]
+        index_in_epoch = batch_size
+        assert batch_size <= num_examples
+    end = index_in_epoch
+    return train_images[start:end], train_labels[start:end]
 
 
 if __name__ == '__main__':
@@ -20,7 +34,14 @@ if __name__ == '__main__':
     # Load traingin data
     images, labels = read_dataset("data/fer2013.csv")
 
-    print(labels)
+    # split data into training & validation
+    VALIDATION_SIZE = 1709
+
+    validation_images = images[:VALIDATION_SIZE]
+    validation_labels = labels[:VALIDATION_SIZE]
+
+    train_images = images[VALIDATION_SIZE:]
+    train_labels = labels[VALIDATION_SIZE:]
 
     image_width = image_height = np.ceil(np.sqrt(images.shape[1])).astype(np.uint8)
 
@@ -65,7 +86,10 @@ if __name__ == '__main__':
     W_fc2 = tf.Variable(tf.truncated_normal([3072, 1536], stddev=1e-4))
     b_fc2 = tf.Variable(tf.constant(0.0, shape=[1536]))
 
-    h_fc2 = tf.nn.relu(tf.matmul(h_fc1, W_fc2) + b_fc2)
+    # (40000, 7, 7, 64) => (40000, 3136)
+    h_fc2_flat = tf.reshape(h_fc1, [-1, 3072])
+
+    h_fc2 = tf.nn.relu(tf.matmul(h_fc2_flat, W_fc2) + b_fc2)
 
     # dropout
     keep_prob = tf.placeholder('float')
@@ -81,7 +105,7 @@ if __name__ == '__main__':
     cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
 
     # optimisation function
-    train_step = tf.train.AdamOptimizer().minimize(cross_entropy)
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 
     # labels
     labels_flat = tf.argmax(y_, 1)
@@ -89,12 +113,12 @@ if __name__ == '__main__':
     # prediction function
     predict = tf.argmax(y, 1)
 
-    print_labels = tf.Print(labels_flat, [labels_flat], "The labels are : ")
+    #    print_labels = tf.Print(labels_flat, [labels_flat], "The labels are : ")
 
-    print_predict = tf.Print(predict, [predict], "The prediction is : ")
+    #    print_predict = tf.Print(predict, [predict], "The prediction is : ")
 
     # evaluation
-    correct_prediction = tf.equal(print_predict, print_labels)
+    correct_prediction = tf.equal(predict, labels_flat)
 
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
@@ -105,29 +129,35 @@ if __name__ == '__main__':
     sess.run(init)
 
     # Do iterative training
-    TRAINING_ITERATIONS = 3000
+    training_iterations = 3000
     batch_size = 50
-    start = 0
     display_step = 1
-    for i in range(0, TRAINING_ITERATIONS):
-        batch_xs, batch_ys = next_batch(images, labels, start, batch_size)
-        start += batch_size
+    epochs_completed = 0
+    index_in_epoch = 0
+    num_examples = train_images.shape[0]
 
-        # check progress on every 1st,2nd,...,10th,20th,...,100th... step
-        if i % display_step == 0 or (i + 1) == TRAINING_ITERATIONS:
+    for i in range(0, training_iterations):
+        # get new batch
+        batch_xs, batch_ys = next_batch(batch_size)
+
+        if i % display_step == 0 or (i + 1) == training_iterations:
 
             train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
                                                       y_: batch_ys,
                                                       keep_prob: 1.0})
-            train_accuracy = accuracy.eval(feed_dict={x: batch_xs,
-                                                      y_: batch_ys,
-                                                      keep_prob: 1.0})
+            if (VALIDATION_SIZE):
+                validation_accuracy = accuracy.eval(feed_dict={x: validation_images[0:batch_size],
+                                                               y_: validation_labels[0:batch_size],
+                                                               keep_prob: 1.0})
+                print('training_accuracy / validation_accuracy => %.2f / %.2f for step %d' % (
+                    train_accuracy, validation_accuracy, i))
 
-            print('training_accuracy => %.4f , step => %.4f' % (train_accuracy, i))
+
+            else:
+                print('training_accuracy => %.4f for step %d' % (train_accuracy, i))
 
             # increase display_step
             if i % (display_step * 10) == 0 and i and display_step < 100:
                 display_step *= 10
-
-        # Do the training
+        # train on batch
         sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys, keep_prob: 0.5})
