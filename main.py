@@ -7,6 +7,9 @@ def next_batch(batch_size):
     global train_labels
     global index_in_epoch
     global epochs_completed
+    global num_examples
+
+    print(index_in_epoch, epochs_completed, num_examples)
 
     start = index_in_epoch
     index_in_epoch += batch_size
