@@ -4,7 +4,6 @@ import pickle
 import socket
 
 import numpy as np
-import six
 
 
 class numpysocket():
@@ -18,9 +17,12 @@ class numpysocket():
         while 1:
             client_connection, client_address = server_socket.accept()
             print('connected to ', client_address[0])
-            receiving_buffer = client_connection.recv(58782)
-            if not receiving_buffer: break
-            final_image = np.load(pickle.loads(receiving_buffer))['frame']
+            ultimate_buffer = b''
+            while True:
+                receiving_buffer = client_connection.recv(1024)
+                if not receiving_buffer: break
+                ultimate_buffer += receiving_buffer
+            final_image = np.load(pickle.loads(ultimate_buffer))['frame']
             res = do_job(final_image)
             client_connection.sendall(res)
             client_connection.close()
