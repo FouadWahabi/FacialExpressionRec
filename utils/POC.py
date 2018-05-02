@@ -1,8 +1,10 @@
-from __future__ import division, print_function, absolute_import
-
 import time
 
 import cv2
+
+from numpysocket import *
+
+cascade_classifier = cv2.CascadeClassifier("./haarcascade_files/haarcascade_frontalface_default.xml")
 
 
 def brighten(data, b):
@@ -11,8 +13,6 @@ def brighten(data, b):
 
 
 def format_image(image):
-    cascade_classifier = cv2.CascadeClassifier("./haarcascade_files/haarcascade_frontalface_default.xml")
-
     if len(image.shape) > 2 and image.shape[2] == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     else:
@@ -44,35 +44,30 @@ def format_image(image):
     return image
 
 
-def run_poc():
-    video_capture = cv2.VideoCapture(0)
-    font = cv2.FONT_HERSHEY_SIMPLEX
+nps = numpysocket()
 
-    starttime = time.time()
+video_capture = cv2.VideoCapture(0)
+font = cv2.FONT_HERSHEY_SIMPLEX
 
-    from utils.numpysocket import *
+while True:
+    # Capture frame-by-frame
+    ret, frame = video_capture.read()
 
-    nps = numpysocket()
+    image = format_image(frame)
 
-    while True:
-        # Capture frame-by-frame
-        ret, frame = video_capture.read()
+    # Display face
+    cv2.imshow("Lol", image)
 
-        image = format_image(frame)
+    # Display the resulting frame
+    cv2.imshow('Video', frame)
 
-        # Display face
-        cv2.imshow("Lol", image)
+    nps.startClient("www.math-cs.ucmo.edu", image)
 
-        # Display the resulting frame
-        cv2.imshow('Video', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-        nps.startClient("www.math-cs.ucmo.edu", image)
+    time.sleep(0.1)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-        time.sleep(5.0 - ((time.time() - starttime) % 5.0))
-
-    # When everything is done, release the capture
-    video_capture.release()
-    cv2.destroyAllWindows()
+# When everything is done, release the capture
+video_capture.release()
+cv2.destroyAllWindows()

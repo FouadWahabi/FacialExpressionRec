@@ -1,7 +1,7 @@
 from __future__ import division, print_function, absolute_import
 
+import pickle
 import socket
-from io import StringIO
 
 import numpy as np
 import six
@@ -18,14 +18,9 @@ class numpysocket():
         while 1:
             client_connection, client_address = server_socket.accept()
             print('connected to ', client_address[0])
-            ultimate_buffer = ''
-            while True:
-                receiving_buffer = client_connection.recv(1024)
-                if not receiving_buffer: break
-                if isinstance(receiving_buffer, six.string_types):
-                    ultimate_buffer += receiving_buffer
-                    print('-')
-            final_image = np.load(StringIO(ultimate_buffer))['frame']
+            receiving_buffer = client_connection.recv(58782)
+            if not receiving_buffer: break
+            final_image = np.load(pickle.loads(receiving_buffer))['frame']
             res = do_job(final_image)
             client_connection.sendall(res)
             client_connection.close()
@@ -47,11 +42,8 @@ class numpysocket():
         except socket.error as e:
             print('Connection to %s on port %s failed: %s' % (server_address, port, e))
             return
-        f = StringIO()
-        np.savez_compressed(f, frame=image)
-        f.seek(0)
-        out = f.read()
-        client_socket.sendall(out)
+        client_socket.sendall(pickle.dumps(image))
+        print(len(pickle.dumps(image)), "bytes")
         ultimate_buffer = ''
         while True:
             receiving_buffer = client_socket.recv(1024)

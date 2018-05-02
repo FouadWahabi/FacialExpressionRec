@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     if sys.argv[1] == 'poc':
         from utils.POC import *
-
-        run_poc()
+        pass
+        # run_poc()
 
     if sys.argv[1] == 'serve':
         network.load_model()
