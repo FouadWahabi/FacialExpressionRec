@@ -12,6 +12,8 @@ def read_dataset(path):
     images = pixels_values.values
     images = images.astype(np.float)
     images = preprocessing(images)
+    # face_size = np.ceil(np.sqrt(images.shape[1])).astype(np.uint8)
+    # images = images.reshape([-1, face_size, face_size, 1])
 
     labels_flat = train_data["emotion"].values.ravel()
     print(labels_flat)
