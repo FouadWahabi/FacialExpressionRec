@@ -22,7 +22,7 @@ class numpysocket():
                 receiving_buffer = client_connection.recv(1024)
                 if not receiving_buffer: break
                 ultimate_buffer += receiving_buffer
-            final_image = np.load(pickle.loads(ultimate_buffer))['frame']
+            final_image = np.load(pickle.loads(ultimate_buffer, encoding='latin1'))['frame']
             res = do_job(final_image)
             client_connection.sendall(res)
             client_connection.close()
