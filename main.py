@@ -18,3 +18,16 @@ if __name__ == "__main__":
     if sys.argv[1] == 'train':
         network.start_training()
         network.save_model()
+
+    if sys.argv[1] == 'poc':
+        from utils.POC import *
+
+        run_poc()
+
+    if sys.argv[1] == 'serve':
+        network.load_model()
+
+        from utils.numpysocket import *
+
+        nps = numpysocket()
+        nps.startServer(network.predict)
