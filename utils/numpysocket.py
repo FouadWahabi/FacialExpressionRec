@@ -1,9 +1,10 @@
 from __future__ import division, print_function, absolute_import
 
 import socket
-from cStringIO import StringIO
+from io import StringIO
 
 import numpy as np
+import six
 
 
 class numpysocket():
@@ -21,8 +22,9 @@ class numpysocket():
             while True:
                 receiving_buffer = client_connection.recv(1024)
                 if not receiving_buffer: break
-                ultimate_buffer += receiving_buffer
-                print('-')
+                if isinstance(receiving_buffer, six.string_types):
+                    ultimate_buffer += receiving_buffer
+                    print('-')
             final_image = np.load(StringIO(ultimate_buffer))['frame']
             res = do_job(final_image)
             client_connection.sendall(res)
