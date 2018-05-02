@@ -67,15 +67,15 @@ class EmotionRecognition:
         print('[+] Model trained and saved at ' + "emotion_recognition2")
 
     def load_model(self):
-        if isfile(join("model", "emotion_recognition2")):
-            self.model.load(join("model", "emotion_recognition2"))
-        else:
-            raise Exception("You should train the model first")
+        # if isfile(join("model", "emotion_recognition2")):
+        self.model.load(join("model", "emotion_recognition"))
+        # else:
+        #    raise Exception("You should train the model first")
         print('[+] Model loaded from ' + "emotion_recognition2")
 
     def predict(self, image):
         if image is None:
             return None
-        image = image.reshape(-1, self.face_size * self.face_size)
-
+        image = np.reshape(image, (-1, self.face_size * self.face_size))
+        print(image.shape)
         return self.model.predict(image)
