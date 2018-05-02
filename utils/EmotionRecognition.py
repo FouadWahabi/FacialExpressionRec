@@ -76,6 +76,6 @@ class EmotionRecognition:
     def predict(self, image):
         if image is None:
             return None
-        image = image.reshape([-1, self.face_size * self.face_size])
+        image = image.reshape(-1, self.face_size * self.face_size)
 
         return self.model.predict(image)
