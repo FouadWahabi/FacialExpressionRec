@@ -24,7 +24,7 @@ class numpysocket():
                 ultimate_buffer += receiving_buffer
                 if ultimate_buffer.decode("utf-8")[-4:] == "done":
                     break
-            final_image = np.array([].append(np.array(pickle.loads(ultimate_buffer, encoding='latin1'))))
+            final_image = np.vstack(np.array(pickle.loads(ultimate_buffer, encoding='latin1')))
             res = do_job(final_image)
             client_connection.sendall(pickle.dumps(res))
             client_connection.close()
