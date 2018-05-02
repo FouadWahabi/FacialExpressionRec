@@ -44,7 +44,7 @@ class numpysocket():
         try:
             client_socket.connect((server_address, port))
             print('Connected to %s on port %s' % (server_address, port))
-        except socket.error, e:
+        except socket.error as e:
             print('Connection to %s on port %s failed: %s' % (server_address, port, e))
             return
         f = StringIO()
