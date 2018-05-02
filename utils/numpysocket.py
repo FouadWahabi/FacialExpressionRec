@@ -26,8 +26,8 @@ class numpysocket():
                     break
             final_image = np.array(pickle.loads(ultimate_buffer, encoding='latin1'))
             print(final_image)
-            # res = do_job(final_image)
-            client_connection.sendall(b'res')
+            res = do_job(final_image)
+            client_connection.sendall(pickle.dumps(res))
             client_connection.close()
         server_socket.close()
 
@@ -50,12 +50,12 @@ class numpysocket():
         client_socket.sendall(pickle.dumps(image))
         client_socket.sendall(b'done')
         print(len(pickle.dumps(image)), "bytes")
-        ultimate_buffer = ''
+        ultimate_buffer = b''
         while True:
             receiving_buffer = client_socket.recv(1024)
             if not receiving_buffer: break
             ultimate_buffer += receiving_buffer
 
-        print(ultimate_buffer)
+        print(pickle.loads(ultimate_buffer, encoding='latin1'))
         client_socket.shutdown(1)
         client_socket.close()
