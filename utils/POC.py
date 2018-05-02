@@ -49,24 +49,24 @@ nps = numpysocket()
 video_capture = cv2.VideoCapture(0)
 font = cv2.FONT_HERSHEY_SIMPLEX
 
-while True:
-    # Capture frame-by-frame
-    ret, frame = video_capture.read()
+# while True:
+# Capture frame-by-frame
+ret, frame = video_capture.read()
 
-    image = format_image(frame)
+image = format_image(frame)
 
-    # Display face
-    cv2.imshow("Lol", image)
+# Display face
+cv2.imshow("Lol", image)
 
-    # Display the resulting frame
-    cv2.imshow('Video', frame)
+# Display the resulting frame
+cv2.imshow('Video', frame)
 
-    nps.startClient("www.math-cs.ucmo.edu", image)
+nps.startClient("www.math-cs.ucmo.edu", image)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+if cv2.waitKey(1) & 0xFF == ord('q'):
+    pass
 
-    time.sleep(0.1)
+time.sleep(0.1)
 
 # When everything is done, release the capture
 video_capture.release()

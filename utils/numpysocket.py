@@ -22,9 +22,12 @@ class numpysocket():
                 receiving_buffer = client_connection.recv(1024)
                 if not receiving_buffer: break
                 ultimate_buffer += receiving_buffer
+                if ultimate_buffer.decode("utf-8")[:-4] == "done":
+                    break
             final_image = np.load(pickle.loads(ultimate_buffer, encoding='latin1'))['frame']
-            res = do_job(final_image)
-            client_connection.sendall(res)
+            print(final_image)
+            # res = do_job(final_image)
+            client_connection.sendall("res")
             client_connection.close()
         server_socket.close()
 
@@ -45,6 +48,7 @@ class numpysocket():
             print('Connection to %s on port %s failed: %s' % (server_address, port, e))
             return
         client_socket.sendall(pickle.dumps(image))
+        client_socket.sendall(b'done')
         print(len(pickle.dumps(image)), "bytes")
         ultimate_buffer = ''
         while True:
