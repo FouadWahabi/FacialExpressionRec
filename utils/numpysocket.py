@@ -55,6 +55,8 @@ class numpysocket():
             if not receiving_buffer: break
             ultimate_buffer += receiving_buffer
 
-        print(pickle.loads(ultimate_buffer))
+        res = np.argmax(pickle.loads(ultimate_buffer), axis=1)
+        emotions = ['angry', 'disgusted', 'fearful', 'happy', 'sad', 'surprised', 'neutral']
+        print(emotions[res[0]])
         client_socket.shutdown(1)
         client_socket.close()
