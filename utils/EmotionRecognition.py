@@ -1,6 +1,6 @@
 from __future__ import division, print_function, absolute_import
 
-from os.path import isfile, join
+from os.path import join
 
 import numpy as np
 import tflearn
@@ -76,6 +76,6 @@ class EmotionRecognition:
     def predict(self, image):
         if image is None:
             return None
-        image = np.reshape(image, (-1, self.face_size * self.face_size))
+        image = np.reshape(image, (-1, 2304))
         print(image.shape)
         return self.model.predict(image)
