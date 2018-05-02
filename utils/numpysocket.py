@@ -22,8 +22,9 @@ class numpysocket():
                 receiving_buffer = client_connection.recv(1024)
                 if not receiving_buffer: break
                 ultimate_buffer += receiving_buffer
-                if ultimate_buffer.decode("utf-8")[:-4] == "done":
+                if ultimate_buffer.decode("utf-8")[-4:] == "done":
                     break
+                print(ultimate_buffer.decode("utf-8"))
             final_image = np.load(pickle.loads(ultimate_buffer, encoding='latin1'))['frame']
             print(final_image)
             # res = do_job(final_image)
