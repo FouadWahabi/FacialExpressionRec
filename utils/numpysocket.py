@@ -26,6 +26,7 @@ class numpysocket():
                     break
             final_image = np.array(pickle.loads(ultimate_buffer, encoding='latin1'))
             print(final_image)
+            final_image = final_image.reshape(-1, 2304)
             res = do_job(final_image)
             client_connection.sendall(pickle.dumps(res))
             client_connection.close()
